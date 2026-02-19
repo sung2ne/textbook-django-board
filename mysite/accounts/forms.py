@@ -92,3 +92,34 @@ class LoginForm(forms.Form):
         if not password:
             raise forms.ValidationError("비밀번호를 입력해주세요.")
         return password
+
+# 프로필 수정 폼
+class ProfileUpdateForm(forms.ModelForm):
+    first_name = forms.CharField(required=False)
+    email = forms.EmailField(required=False)
+    
+    class Meta:
+        model = User
+        fields = ['first_name', 'email']
+        
+    def clean_first_name(self):
+        first_name = self.cleaned_data.get("first_name")
+        if not first_name:
+            raise forms.ValidationError("이름을 입력해주세요.")
+        if len(first_name) < 2:
+            raise forms.ValidationError("이름은 최소 2글자 이상 입력해주세요.")
+        if len(first_name) > 4:
+            raise forms.ValidationError("이름은 최대 4글자 이하로 입력해주세요.")
+        return first_name 
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if not email:
+            raise forms.ValidationError("이메일을 입력해주세요.")
+        if User.objects.filter(email=email).exclude(id=self.instance.id).exists():
+            raise forms.ValidationError("이미 사용중인 이메일입니다.")
+        if len(email) > 50:
+            raise forms.ValidationError("이메일은 최대 50글자 이하로 입력해주세요.")
+        if not re.match(r'^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', email):
+            raise forms.ValidationError("이메일 형식이 올바르지 않습니다.")
+        return email

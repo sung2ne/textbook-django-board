@@ -1,11 +1,11 @@
 from django.http import HttpResponse
 from django.contrib import messages
 from django.shortcuts import redirect, render
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 
-from .forms import LoginForm, RegisterForm
+from .forms import LoginForm, RegisterForm, ProfileUpdateForm
 
 # 회원가입
 def register_account(request):
@@ -61,7 +61,7 @@ def login_account(request):
 # 로그아웃
 def logout_account(request):
     logout(request)
-    return redirect('accounts:login')
+    return redirect('auth:login')
 
 # 프로필 보기
 @login_required(login_url='auth:login')
@@ -69,8 +69,22 @@ def get_profile(request):
     return render(request, 'accounts/profile.html', {'message_class': 'col-4 mx-auto'})
 
 # 프로필 수정
+@login_required(login_url='auth:login')
 def update_profile(request):
-    return HttpResponse('프로필 수정')
+    form = ProfileUpdateForm(instance=request.user)
+    
+    if request.method == 'POST':
+        form = ProfileUpdateForm(request.POST, instance=request.user)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.save()
+            update_session_auth_hash(request, user)
+            messages.success(request, '프로필 수정이 완료되었습니다.')
+            return redirect('auth:profile')
+        else:
+            messages.error(request, '프로필 수정에 실패했습니다.')
+            
+    return render(request, 'accounts/update_profile.html', {'form': form, 'message_class': 'col-4 mx-auto'})
 
 # 비밀번호 수정
 def update_password(request):
