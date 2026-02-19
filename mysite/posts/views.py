@@ -8,7 +8,6 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.contrib.auth.hashers import check_password
 from django.contrib.auth.decorators import login_required
 
 from .models import Post
@@ -125,24 +124,24 @@ def update_post(request, post_id):
     return render(request, 'posts/update.html', {'form': form})
 
 # 게시글 삭제
+@login_required(login_url='auth:login')
 def delete_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
-    password = request.POST.get('password')
+    
+    if post.created_by != request.user:
+        messages.error(request, '게시글 삭제 권한이 없습니다.')
+        return redirect('posts:read', post_id=post.id)
     
     if request.method == 'POST':
-        if check_password(password, post.password):
-            # 파일 삭제
-            if post.filename:
-                file_path = os.path.join(settings.MEDIA_ROOT, 'posts', str(post.id), str(post.filename))    
-                if os.path.exists(file_path):
-                    os.remove(file_path)
-            
-            post.delete()
-            messages.success(request, '게시글이 삭제되었습니다.')
-            return redirect('posts:list')
-        else:
-            messages.error(request, '비밀번호가 일치하지 않습니다.')
-            return redirect('posts:read', post_id=post.id)
+        # 파일 삭제
+        if post.filename:
+            file_path = os.path.join(settings.MEDIA_ROOT, 'posts', str(post.id), str(post.filename))    
+            if os.path.exists(file_path):
+                os.remove(file_path)
+        
+        post.delete()
+        messages.success(request, '게시글이 삭제되었습니다.')
+        return redirect('posts:list')
 
 # 게시글 목록
 def get_posts(request):    
