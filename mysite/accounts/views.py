@@ -27,7 +27,7 @@ def register_account(request):
         else:
             messages.error(request, '회원가입에 실패했습니다.')
 
-    return render(request, 'accounts/register.html', {'form': form, 'message_class': 'col-4 mx-auto'})
+    return render(request, 'accounts/signup.html', {'form': form, 'message_class': 'col-12 col-md-6 col-lg-4 mx-auto'})
 
 # 로그인
 def login_account(request):
