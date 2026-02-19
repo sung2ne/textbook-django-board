@@ -50,7 +50,17 @@ def update_post(request, post_id):
 
 # 게시글 삭제
 def delete_post(request, post_id):
-    return HttpResponse('게시글 삭제')
+    post = get_object_or_404(Post, id=post_id)
+    password = request.POST.get('password')
+    
+    if request.method == 'POST':
+        if password == post.password:
+            post.delete()
+            messages.success(request, '게시글이 삭제되었습니다.')
+            return redirect('posts:list')
+        else:
+            messages.error(request, '비밀번호가 일치하지 않습니다.')
+            return redirect('posts:read', post_id=post.id)
 
 # 게시글 목록
 def get_posts(request):
