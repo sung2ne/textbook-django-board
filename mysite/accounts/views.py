@@ -1,8 +1,33 @@
 from django.http import HttpResponse
+from django.contrib import messages
+from django.shortcuts import redirect, render
+from django.contrib.auth.models import User
+
+from .forms import RegisterForm
 
 # 회원가입
 def register_account(request):
-    return HttpResponse('회원가입')
+    if request.user.is_authenticated:
+        return redirect('auth:profile')
+
+    form = RegisterForm()
+
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            user = User.objects.create_user(
+                username=form.cleaned_data["username"],
+                password=form.cleaned_data["password1"],
+                first_name=form.cleaned_data["first_name"],
+                email=form.cleaned_data["email"]
+            )
+            user.save()
+            messages.success(request, '회원가입이 완료되었습니다.')
+            return redirect('auth:login')
+        else:
+            messages.error(request, '회원가입에 실패했습니다.')
+
+    return render(request, 'accounts/register.html', {'form': form, 'message_class': 'col-4 mx-auto'})
 
 # 로그인
 def login_account(request):
