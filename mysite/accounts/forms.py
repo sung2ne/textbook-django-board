@@ -75,3 +75,20 @@ class RegisterForm(forms.ModelForm):
         if not re.match(r'^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', email):
             raise forms.ValidationError("이메일 형식이 올바르지 않습니다.")
         return email
+
+# 로그인 폼
+class LoginForm(forms.Form):
+    username = forms.CharField(required=False)
+    password = forms.CharField(required=False)
+
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+        if not username:
+            raise forms.ValidationError("아이디를 입력해주세요.")
+        return username
+
+    def clean_password(self):
+        password = self.cleaned_data.get("password")
+        if not password:
+            raise forms.ValidationError("비밀번호를 입력해주세요.")
+        return password
