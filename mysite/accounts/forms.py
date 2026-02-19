@@ -123,3 +123,47 @@ class ProfileUpdateForm(forms.ModelForm):
         if not re.match(r'^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', email):
             raise forms.ValidationError("이메일 형식이 올바르지 않습니다.")
         return email
+    
+# 비밀번호 수정 폼
+class PasswordUpdateForm(forms.Form):
+    password = forms.CharField(required=False)
+    password1 = forms.CharField(required=False)
+    password2 = forms.CharField(required=False)
+
+    class Meta:
+        model = User
+        fields = ['password', 'password1', 'password2']
+
+    def clean_password(self):
+        password = self.cleaned_data.get("password")
+        if not password:
+            raise forms.ValidationError("비밀번호를 입력해주세요.")
+        return password
+
+    def clean_password1(self):
+        password1 = self.cleaned_data.get("password1")
+        if not password1:
+            raise forms.ValidationError("비밀번호를 입력해주세요.")
+        if len(password1) < 8:
+            raise forms.ValidationError("비밀번호는 최소 8글자 이상 입력해주세요.")
+
+        # 비밀번호 복잡성 검증
+        if not any(char.isdigit() for char in password1):
+            raise forms.ValidationError("비밀번호는 최소 1개의 숫자를 포함해야 합니다.")
+        if not any(char.isupper() for char in password1):
+            raise forms.ValidationError("비밀번호는 최소 1개의 대문자를 포함해야 합니다.")
+        if not any(char.islower() for char in password1):
+            raise forms.ValidationError("비밀번호는 최소 1개의 소문자를 포함해야 합니다.")
+        if not any(char in "!@#$%^&*()_+-=[]{}|;:,.<>?" for char in password1):
+            raise forms.ValidationError("비밀번호는 최소 1개의 특수문자를 포함해야 합니다.")
+
+        return password1
+
+    def clean_password2(self):
+        password1 = self.cleaned_data.get("password1")
+        password2 = self.cleaned_data.get("password2")
+        if not password2:
+            raise forms.ValidationError("비밀번호 확인을 입력해주세요.")
+        if password1 != password2:
+            raise forms.ValidationError("비밀번호와 비밀번호 확인이 일치하지 않습니다.")
+        return password2
