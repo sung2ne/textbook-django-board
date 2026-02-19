@@ -1,19 +1,18 @@
 import random
 import string
-from django.http import HttpResponse
 from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 
-from .forms import UsernameFindForm, LoginForm, PasswordResetForm, RegisterForm, PasswordUpdateForm, ProfileUpdateForm
+from .forms import AccountDeleteForm, UsernameFindForm, LoginForm, PasswordResetForm, RegisterForm, PasswordUpdateForm, ProfileUpdateForm
 
 # 회원가입
 def register_account(request):
     if request.user.is_authenticated:
         return redirect('auth:profile')
-
+        
     form = RegisterForm()
 
     if request.method == 'POST':
@@ -165,6 +164,26 @@ def reset_password(request):
     
     return render(request, 'accounts/reset_password.html', {'form': form, 'message_class': 'col-4 mx-auto'})
 
-# 사용자 탈퇴
+# 탈퇴
+@login_required(login_url='auth:login')
 def delete_account(request):
-    return HttpResponse('사용자 탈퇴')
+    form = AccountDeleteForm()
+    
+    if request.method == 'POST':
+        form = AccountDeleteForm(request.POST)
+        if form.is_valid():
+            first_name = form.cleaned_data['first_name']
+            email = form.cleaned_data['email']
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            user = User.objects.filter(first_name=first_name, username=username, email=email).first()
+            authenticated = authenticate(request, username=username, password=password)
+            if user and authenticated is not None:
+                user.delete()
+                logout(request)
+                messages.success(request, '회원탈퇴가 완료되었습니다.')
+                return redirect('auth:login')
+            else:
+                messages.error(request, '회원탈퇴에 실패했습니다. 입력정보를 확인하세요.')
+                
+    return render(request, 'accounts/delete_account.html', {'form': form, 'message_class': 'col-4 mx-auto'})

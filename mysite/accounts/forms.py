@@ -216,3 +216,38 @@ class PasswordResetForm(forms.Form):
         if not email:
             raise forms.ValidationError("이메일을 입력해주세요.")
         return email
+    
+# 회원탈퇴 폼
+class AccountDeleteForm(forms.Form):
+    first_name = forms.CharField(required=False)
+    username = forms.CharField(required=False)
+    email = forms.EmailField(required=False)
+    password = forms.CharField(required=False)
+    
+    class Meta:
+        model = User
+        fields = ['first_name', 'username', 'email', 'password']
+        
+    def clean_first_name(self):
+        first_name = self.cleaned_data.get("first_name")
+        if not first_name:
+            raise forms.ValidationError("이름을 입력해주세요.")
+        return first_name 
+    
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+        if not username:
+            raise forms.ValidationError("아이디를 입력해주세요.")
+        return username
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if not email:
+            raise forms.ValidationError("이메일을 입력해주세요.")
+        return email
+    
+    def clean_password(self):
+        password = self.cleaned_data.get("password")
+        if not password:
+            raise forms.ValidationError("비밀번호를 입력해주세요.")
+        return password
