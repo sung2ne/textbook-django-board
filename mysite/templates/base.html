@@ -49,7 +49,7 @@
                                     <a class="nav-link" href="{% url 'auth:login' %}">로그인</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'auth:signup' %}">회원가입</a>
+                                    <a class="nav-link" href="{% url 'auth:register' %}">회원가입</a>
                                 </li>
                             {% endif %}
                         </ul>
@@ -103,7 +103,16 @@
     <!-- STATIC JS -->
     <script src="{% static 'script.js' %}"></script>
     <script>
-        /* 자바스크립트 */
+        $(document).ready(function() {
+            // 모든 AJAX 요청에 CSRF 토큰을 자동으로 포함
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (!this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", document.querySelector('[name=csrfmiddlewaretoken]').value);
+                    }
+                }
+            });
+        });
     </script>
     {% block script %}{% endblock %}
 </body>
