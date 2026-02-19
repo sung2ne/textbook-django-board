@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 
 from .forms import LoginForm, RegisterForm
@@ -12,7 +13,7 @@ def register_account(request):
         return redirect('auth:profile')
 
     form = RegisterForm()
-    
+
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
@@ -60,11 +61,12 @@ def login_account(request):
 # 로그아웃
 def logout_account(request):
     logout(request)
-    return redirect('auth:login')
+    return redirect('accounts:login')
 
 # 프로필 보기
+@login_required(login_url='auth:login')
 def get_profile(request):
-    return HttpResponse('프로필 보기')
+    return render(request, 'accounts/profile.html', {'message_class': 'col-4 mx-auto'})
 
 # 프로필 수정
 def update_profile(request):
