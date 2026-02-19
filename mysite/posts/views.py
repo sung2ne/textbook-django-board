@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
+from django.core.paginator import Paginator
 
 from .models import Post
 from .forms import PostCreateForm, PostUpdateForm
@@ -51,7 +52,7 @@ def update_post(request, post_id):
 def delete_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     password = request.POST.get('password')
-
+    
     if request.method == 'POST':
         if password == post.password:
             post.delete()
@@ -62,6 +63,19 @@ def delete_post(request, post_id):
             return redirect('posts:read', post_id=post.id)
 
 # 게시글 목록
-def get_posts(request):
+def get_posts(request):    
+    page = request.GET.get('page', '1') 
     posts = Post.objects.all().order_by('-created_at')
-    return render(request, 'posts/list.html', {'posts': posts})
+    
+    # 페이지네이션
+    paginator = Paginator(posts, 10)
+    page_obj = paginator.get_page(page)
+    
+    # 현재 페이지의 첫 번째 게시글 번호 계산
+    start_index = paginator.count - (paginator.per_page * (page_obj.number - 1))
+    
+    # 순번 계산하여 게시글 리스트에 추가
+    for index, _ in enumerate(page_obj, start=0):
+        page_obj[index].index_number = start_index - index
+    
+    return render(request, 'posts/list.html', {'posts': page_obj})
