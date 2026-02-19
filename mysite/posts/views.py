@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.contrib.auth.hashers import make_password, check_password
 
 from .models import Post
 from .forms import PostCreateForm, PostUpdateForm
@@ -15,6 +16,7 @@ def create_post(request):
         
         if form.is_valid():
             post = form.save(commit=False)
+            post.password = make_password(form.cleaned_data['password'])
             post.save()
             messages.success(request, '게시글이 등록되었습니다.')
             return redirect("posts:read", post_id=post.id)
@@ -31,14 +33,16 @@ def get_post(request, post_id):
 # 게시글 수정
 def update_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)    
+    post_password = post.password
     form = PostUpdateForm(instance=post)
     
     if request.method == 'POST':
         form = PostUpdateForm(request.POST, instance=post)
         
         if form.is_valid():
-            if form.cleaned_data['password'] == post.password:
+            if check_password(form.cleaned_data['password'], post_password):
                 post = form.save(commit=False)
+                post.password = make_password(form.cleaned_data['password'])
                 post.save()
                 messages.success(request, '게시글이 수정되었습니다.')
                 return redirect('posts:read', post_id=post.id)
@@ -55,7 +59,7 @@ def delete_post(request, post_id):
     password = request.POST.get('password')
     
     if request.method == 'POST':
-        if password == post.password:
+        if check_password(password, post.password):
             post.delete()
             messages.success(request, '게시글이 삭제되었습니다.')
             return redirect('posts:list')
