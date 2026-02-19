@@ -1,5 +1,4 @@
 from django.shortcuts import get_object_or_404, redirect, render
-from django.http import HttpResponse
 from django.contrib import messages
 
 from .models import Post
@@ -52,7 +51,7 @@ def update_post(request, post_id):
 def delete_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     password = request.POST.get('password')
-    
+
     if request.method == 'POST':
         if password == post.password:
             post.delete()
@@ -64,4 +63,5 @@ def delete_post(request, post_id):
 
 # 게시글 목록
 def get_posts(request):
-    return HttpResponse('게시글 목록')
+    posts = Post.objects.all().order_by('-created_at')
+    return render(request, 'posts/list.html', {'posts': posts})
