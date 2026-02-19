@@ -11,6 +11,7 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 
 from .models import Post
+from comments.models import Comment
 from .forms import PostCreateForm, PostUpdateForm
 
 # 게시글 등록
@@ -57,7 +58,8 @@ def create_post(request):
 @login_required(login_url='auth:login')
 def get_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
-    return render(request, 'posts/read.html', {'post': post})
+    comments = Comment.objects.filter(post=post).order_by('-created_at')
+    return render(request, 'posts/read.html', {'post': post, 'comments': comments})
 
 # 게시글 수정
 @login_required(login_url='auth:login')

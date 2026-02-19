@@ -51,6 +51,16 @@
     <div class="col-12">
         <!-- 댓글 목록 -->
         <div id="commentList">
+            {% for comment in comments %}
+            <div class="card mb-3" data-comment-id="{{ comment.id }}">
+                <div class="card-body">
+                    {{ comment.content|linebreaksbr }}
+                </div>
+                <div class="card-footer text-muted">
+                    작성자: {{ comment.created_by.first_name }} | 등록일시: {{ comment.created_at | date:"Y-m-d H:i" }} | 수정일시: {{ comment.updated_at | date:"Y-m-d H:i" }}
+                </div>
+            </div>
+            {% endfor %}
         </div>
         <!--// 댓글 목록 -->
     </div>
