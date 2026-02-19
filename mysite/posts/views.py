@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.db.models import Q
 
 from .models import Post
 from .forms import PostCreateForm, PostUpdateForm
@@ -65,7 +66,30 @@ def delete_post(request, post_id):
 # 게시글 목록
 def get_posts(request):    
     page = request.GET.get('page', '1') 
+    searchType = request.GET.get('searchType')
+    searchKeyword = request.GET.get('searchKeyword')
     posts = Post.objects.all().order_by('-created_at')
+    
+    # 검색 조건 처리
+    if searchType not in [None, ''] and searchKeyword not in [None, '']:
+        if searchType == 'all':
+            posts = posts.filter(
+                Q(title__contains=searchKeyword) | 
+                Q(content__contains=searchKeyword) | 
+                Q(username__contains=searchKeyword)
+            )
+        elif searchType == 'title':
+            posts = posts.filter(
+                Q(title__contains=searchKeyword)
+            )
+        elif searchType == 'content':
+            posts = posts.filter(
+                Q(content__contains=searchKeyword)
+            )
+        elif searchType == 'username':
+            posts = posts.filter(
+                Q(username__contains=searchKeyword)
+            )
     
     # 페이지네이션
     paginator = Paginator(posts, 10)
@@ -78,4 +102,8 @@ def get_posts(request):
     for index, _ in enumerate(page_obj, start=0):
         page_obj[index].index_number = start_index - index
     
-    return render(request, 'posts/list.html', {'posts': page_obj})
+    return render(request, 'posts/list.html', {
+        'posts': page_obj,
+        'searchType': searchType,
+        'searchKeyword': searchKeyword
+    })
