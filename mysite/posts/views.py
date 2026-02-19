@@ -1,7 +1,8 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.http import HttpResponse
 from django.contrib import messages
 
+from .models import Post
 from .forms import PostCreateForm
 
 # 게시글 등록
@@ -23,7 +24,8 @@ def create_post(request):
 
 # 게시글 보기
 def get_post(request, post_id):
-    return HttpResponse('게시글 보기')
+    post = get_object_or_404(Post, id=post_id)
+    return render(request, 'posts/read.html', {'post': post})
 
 # 게시글 수정
 def update_post(request, post_id):
@@ -32,7 +34,7 @@ def update_post(request, post_id):
 # 게시글 삭제
 def delete_post(request, post_id):
     return HttpResponse('게시글 삭제')
-
+    
 # 게시글 목록
 def get_posts(request):
     return HttpResponse('게시글 목록')
