@@ -62,3 +62,40 @@
     </div>
 </div>
 {% endblock %}
+
+{% block script %}
+<script>
+    $(document).ready(function() {
+        // 게시글 폼 검증
+        $('#createForm').submit(function(event) {
+            event.preventDefault();
+
+            if ($('#title').val() == '') {
+                alert('제목을 입력하세요.');
+                $('#title').focus();
+                return false;
+            }
+
+            if ($('#content').val() == '') {
+                alert('내용을 입력하세요.');
+                $('#content').focus();
+                return false;
+            }
+
+            if ($('#username').val() == '') {
+                alert('작성자를 입력하세요.');
+                $('#username').focus();
+                return false;
+            }
+
+            if ($('#password').val() == '') {
+                alert('비밀번호를 입력하세요.');
+                $('#password').focus();
+                return false;
+            }
+
+            return true;
+        });
+    });
+</script>
+{% endblock %}
