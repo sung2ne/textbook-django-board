@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.core.paginator import Paginator
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 
 # 사용자 목록
 @login_required(login_url='auth:login')
@@ -13,7 +13,7 @@ def get_users(request):
     searchType = request.GET.get('searchType')
     searchKeyword = request.GET.get('searchKeyword')
     users = User.objects.all().order_by('username')
-
+    
     # 검색 조건 처리
     if searchType not in [None, ''] and searchKeyword not in [None, '']:
         if searchType == 'all':
@@ -22,18 +22,18 @@ def get_users(request):
                 Q(first_name__contains=searchKeyword) | 
                 Q(email__contains=searchKeyword)
             )
-
+            
     # 페이지네이션
     paginator = Paginator(users, 10)
     page_obj = paginator.get_page(page)
-
+    
     # 현재 페이지의 첫 번째 사용자 번호 계산
     start_index = paginator.count - (paginator.per_page * (page_obj.number - 1))
-
+    
     # 순번 계산하여 사용자 리스트에 추가
     for index, _ in enumerate(page_obj, start=0):
         page_obj[index].index_number = start_index - index
-
+    
     return render(request, 'users/list.html', {
         'users': page_obj,
         'searchType': searchType,
@@ -44,7 +44,8 @@ def get_users(request):
 @login_required(login_url='auth:login')
 @user_passes_test(lambda u: u.is_superuser)
 def get_user(request, user_id):
-    return HttpResponse('사용자 보기')
+    user = get_object_or_404(User, id=user_id)
+    return render(request, 'users/read.html', {'user': user})
 
 # 사용자 삭제
 @login_required(login_url='auth:login')
