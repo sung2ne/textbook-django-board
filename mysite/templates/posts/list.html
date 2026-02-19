@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="row">
-    <div class="col-12">    
+    <div class="col-12">
         <!-- 검색, 등록 버튼 -->
         <div class="d-flex justify-content-between">
             <!-- 검색 폼 -->
@@ -12,7 +12,7 @@
                         <option value="all" {% if searchType == 'all' %}selected{% endif %}>전체</option>
                         <option value="title" {% if searchType == 'title' %}selected{% endif %}>제목</option>
                         <option value="content" {% if searchType == 'content' %}selected{% endif %}>내용</option>
-                        <option value="username" {% if searchType == 'username' %}selected{% endif %}>작성자</option>
+                        <option value="full_name" {% if searchType == 'full_name' %}selected{% endif %}>작성자</option>
                     </select>
                     <input type="text" name="searchKeyword" class="form-control w-auto" value="{{ searchKeyword|default_if_none:'' }}" placeholder="검색어를 입력하세요">
                     <button type="submit" class="btn btn-primary">검색</button>
@@ -20,7 +20,7 @@
                         <a href="{% url 'posts:list' %}" class="btn btn-danger">취소</a>
                     {% endif %}
                 </div>
-            </form>        
+            </form>
             <!-- 등록 버튼 -->
             <a href="{% url 'posts:create' %}" class="btn btn-primary">등록</a>
         </div>
@@ -46,7 +46,7 @@
                     <tr>
                         <td class="text-center">{{ post.index_number }}</td>
                         <td><a href="{% url 'posts:read' post_id=post.id %}">{{ post.title }}</a></td>
-                        <td class="text-center">{{ post.username }}</td>
+                        <td class="text-center">{{ post.created_by.first_name }}</td>
                         <td class="text-center">{{ post.created_at | date:"Y-m-d H:i" }}</td>
                         <td class="text-center">{{ post.updated_at | date:"Y-m-d H:i" }}</td>
                     </tr>
@@ -69,7 +69,7 @@
                             <a class="page-link" href="?page={{ posts.previous_page_number }}">이전</a>
                         </li>
                     {% endif %}
-                    <!--// 이전 페이지 -->                        
+                    <!--// 이전 페이지 -->
                     <!-- 페이지 리스트 -->
                     {% for page_number in posts.paginator.page_range %}
                         {% if page_number >= posts.number|add:-5 and page_number <= posts.number|add:5 %}
@@ -80,7 +80,7 @@
                             </li>
                         {% endif %}
                     {% endfor %}
-                    <!--// 페이지 리스트 -->        
+                    <!--// 페이지 리스트 -->
                     <!-- 다음 페이지 -->
                     {% if posts.has_next %}
                         <li class="page-item">
