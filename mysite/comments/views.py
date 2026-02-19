@@ -95,4 +95,35 @@ def update_comment(request, comment_id):
 
 # 댓글 삭제
 def delete_comment(request, comment_id):
-    return JsonResponse({'message': '댓글 삭제'})
+    if not request.user.is_authenticated:
+        return JsonResponse({'result': 'error', 'message': '로그인 후 이용해주세요.'})
+    
+    if request.method == 'POST':
+        post_id = request.POST.get('post_id')
+        if not post_id:
+            return JsonResponse({'result': 'error', 'message': '게시글을 선택해주세요.'})
+        
+        try:
+            post = Post.objects.get(id=post_id)
+        except Post.DoesNotExist:
+            return JsonResponse({'result': 'error', 'message': '게시글을 찾을 수 없습니다.'})
+        
+        comment_id = request.POST.get('comment_id')
+        if not comment_id:
+            return JsonResponse({'result': 'error', 'message': '댓글을 선택해주세요.'})
+
+        try:
+            comment = Comment.objects.get(id=comment_id)
+        except Comment.DoesNotExist:
+            return JsonResponse({'result': 'error', 'message': '댓글을 찾을 수 없습니다.'})
+
+        if comment.created_by != request.user:
+            return JsonResponse({'result': 'error', 'message': '댓글 삭제 권한이 없습니다.'})
+
+        # 댓글 삭제
+        comment.delete()
+        
+        # 댓글 목록
+        comments = get_comments(post_id)
+
+        return JsonResponse({'result': 'success', 'comments': comments})
