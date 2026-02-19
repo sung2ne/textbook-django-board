@@ -30,7 +30,7 @@ def register_account(request):
         else:
             messages.error(request, '회원가입에 실패했습니다.')
 
-    return render(request, 'accounts/register.html', {'form': form, 'message_class': 'col-4 mx-auto'})
+    return render(request, 'accounts/signup.html', {'form': form, 'message_class': 'col-12 col-md-6 col-lg-4 mx-auto'})
 
 # 로그인
 def login_account(request):
@@ -57,7 +57,7 @@ def login_account(request):
         else:
             messages.error(request, '아이디 또는 비밀번호를 입력해주세요.')
 
-    return render(request, 'accounts/login.html', {'form': form, 'message_class': 'col-4 mx-auto'})
+    return render(request, 'accounts/login.html', {'form': form, 'message_class': 'col-12 col-md-6 col-lg-4 mx-auto'})
 
 # 로그아웃
 def logout_account(request):
@@ -67,7 +67,7 @@ def logout_account(request):
 # 프로필 보기
 @login_required(login_url='auth:login')
 def get_profile(request):
-    return render(request, 'accounts/profile.html', {'message_class': 'col-4 mx-auto'})
+    return render(request, 'accounts/profile.html', {'message_class': 'col-12 col-md-6 col-lg-4 mx-auto'})
 
 # 프로필 수정
 @login_required(login_url='auth:login')
@@ -85,7 +85,7 @@ def update_profile(request):
         else:
             messages.error(request, '프로필 수정에 실패했습니다.')
             
-    return render(request, 'accounts/update_profile.html', {'form': form, 'message_class': 'col-4 mx-auto'})
+    return render(request, 'auth/update_profile.html', {'form': form, 'message_class': 'col-12 col-md-6 col-lg-4 mx-auto'})
 
 # 비밀번호 수정
 @login_required(login_url='auth:login')
@@ -113,7 +113,7 @@ def update_password(request):
         else:
             messages.error(request, '비밀번호 수정에 실패했습니다.')
 
-    return render(request, 'accounts/update_password.html', {'form': form, 'message_class': 'col-4 mx-auto'})
+    return render(request, 'accounts/update_password.html', {'form': form, 'message_class': 'col-12 col-md-6 col-lg-4 mx-auto'})
 
 # 아이디 찾기
 def find_username(request):
@@ -136,7 +136,7 @@ def find_username(request):
         else:
             messages.error(request, '아이디 찾기에 실패했습니다.')
             
-    return render(request, 'accounts/find_username.html', {'form': form, 'message_class': 'col-4 mx-auto'})
+    return render(request, 'accounts/find_username.html', {'form': form, 'message_class': 'col-12 col-md-6 col-lg-4 mx-auto'})
 
 # 비밀번호 초기화
 def reset_password(request):
@@ -162,7 +162,7 @@ def reset_password(request):
             else:
                 messages.error(request, '비밀번호 초기화에 실패했습니다.')
     
-    return render(request, 'accounts/reset_password.html', {'form': form, 'message_class': 'col-4 mx-auto'})
+    return render(request, 'accounts/reset_password.html', {'form': form, 'message_class': 'col-12 col-md-6 col-lg-4 mx-auto'})
 
 # 탈퇴
 @login_required(login_url='auth:login')
@@ -186,4 +186,4 @@ def delete_account(request):
             else:
                 messages.error(request, '회원탈퇴에 실패했습니다. 입력정보를 확인하세요.')
                 
-    return render(request, 'accounts/delete_account.html', {'form': form, 'message_class': 'col-4 mx-auto'})
+    return render(request, 'accounts/delete_account.html', {'form': form, 'message_class': 'col-12 col-md-6 col-lg-4 mx-auto'})
