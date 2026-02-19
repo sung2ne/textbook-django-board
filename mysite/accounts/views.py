@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 
-from .forms import LoginForm, RegisterForm, PasswordUpdateForm, ProfileUpdateForm
+from .forms import UsernameFindForm, LoginForm, RegisterForm, PasswordUpdateForm, ProfileUpdateForm
 
 # 회원가입
 def register_account(request):
@@ -116,7 +116,26 @@ def update_password(request):
 
 # 아이디 찾기
 def find_username(request):
-    return HttpResponse('아이디 찾기')
+    if request.user.is_authenticated:
+        return redirect('auth:profile')
+    
+    form = UsernameFindForm()
+
+    if request.method == 'POST':
+        form = UsernameFindForm(request.POST)
+        if form.is_valid():
+            first_name = form.cleaned_data['first_name']
+            email = form.cleaned_data['email']
+            user = User.objects.filter(first_name=first_name, email=email).first()
+            if user:
+                messages.success(request, f'아이디는 {user.username}입니다.')
+                return redirect('auth:login')
+            else:
+                messages.error(request, '아이디 찾기에 실패했습니다.')
+        else:
+            messages.error(request, '아이디 찾기에 실패했습니다.')
+            
+    return render(request, 'accounts/find_username.html', {'form': form, 'message_class': 'col-4 mx-auto'})
 
 # 비밀번호 초기화
 def reset_password(request):

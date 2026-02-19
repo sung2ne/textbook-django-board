@@ -129,11 +129,11 @@ class PasswordUpdateForm(forms.Form):
     password = forms.CharField(required=False)
     password1 = forms.CharField(required=False)
     password2 = forms.CharField(required=False)
-
+    
     class Meta:
         model = User
         fields = ['password', 'password1', 'password2']
-
+    
     def clean_password(self):
         password = self.cleaned_data.get("password")
         if not password:
@@ -146,7 +146,7 @@ class PasswordUpdateForm(forms.Form):
             raise forms.ValidationError("비밀번호를 입력해주세요.")
         if len(password1) < 8:
             raise forms.ValidationError("비밀번호는 최소 8글자 이상 입력해주세요.")
-
+        
         # 비밀번호 복잡성 검증
         if not any(char.isdigit() for char in password1):
             raise forms.ValidationError("비밀번호는 최소 1개의 숫자를 포함해야 합니다.")
@@ -156,7 +156,7 @@ class PasswordUpdateForm(forms.Form):
             raise forms.ValidationError("비밀번호는 최소 1개의 소문자를 포함해야 합니다.")
         if not any(char in "!@#$%^&*()_+-=[]{}|;:,.<>?" for char in password1):
             raise forms.ValidationError("비밀번호는 최소 1개의 특수문자를 포함해야 합니다.")
-
+        
         return password1
 
     def clean_password2(self):
@@ -167,3 +167,24 @@ class PasswordUpdateForm(forms.Form):
         if password1 != password2:
             raise forms.ValidationError("비밀번호와 비밀번호 확인이 일치하지 않습니다.")
         return password2
+    
+# 아이디 찾기 폼
+class UsernameFindForm(forms.Form):
+    first_name = forms.CharField(required=False)
+    email = forms.EmailField(required=False)
+    
+    class Meta:
+        model = User
+        fields = ['first_name', 'email']
+        
+    def clean_first_name(self):
+        first_name = self.cleaned_data.get("first_name")
+        if not first_name:
+            raise forms.ValidationError("이름을 입력해주세요.")
+        return first_name 
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if not email:
+            raise forms.ValidationError("이메일을 입력해주세요.")
+        return email
