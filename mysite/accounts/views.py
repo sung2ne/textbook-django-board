@@ -1,3 +1,5 @@
+import random
+import string
 from django.http import HttpResponse
 from django.contrib import messages
 from django.shortcuts import redirect, render
@@ -5,7 +7,7 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 
-from .forms import UsernameFindForm, LoginForm, RegisterForm, PasswordUpdateForm, ProfileUpdateForm
+from .forms import UsernameFindForm, LoginForm, PasswordResetForm, RegisterForm, PasswordUpdateForm, ProfileUpdateForm
 
 # 회원가입
 def register_account(request):
@@ -139,7 +141,29 @@ def find_username(request):
 
 # 비밀번호 초기화
 def reset_password(request):
-    return HttpResponse('비밀번호 초기화')
+    if request.user.is_authenticated:
+        return redirect('auth:profile')
+    
+    form = PasswordResetForm()
+
+    if request.method == 'POST':
+        form = PasswordResetForm(request.POST)
+        if form.is_valid():
+            first_name = form.cleaned_data['first_name']
+            email = form.cleaned_data['email']
+            username = form.cleaned_data['username']
+            user = User.objects.filter(first_name=first_name, username=username, email=email).first()
+            if user:
+                password = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+                user.set_password(password)
+                user.save()
+                
+                messages.success(request, f'비밀번호가 초기화되었습니다. 새로운 비밀번호는 {password}입니다.')
+                return redirect('auth:login')
+            else:
+                messages.error(request, '비밀번호 초기화에 실패했습니다.')
+    
+    return render(request, 'accounts/reset_password.html', {'form': form, 'message_class': 'col-4 mx-auto'})
 
 # 사용자 탈퇴
 def delete_account(request):
