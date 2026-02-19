@@ -55,6 +55,7 @@ def create_post(request):
     return render(request, 'posts/create.html', {'form': form})
 
 # 게시글 보기
+@login_required(login_url='auth:login')
 def get_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     return render(request, 'posts/read.html', {'post': post})
