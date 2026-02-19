@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.contrib import messages
 from django.shortcuts import redirect, render
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
 from .forms import LoginForm, RegisterForm
@@ -12,7 +12,7 @@ def register_account(request):
         return redirect('auth:profile')
 
     form = RegisterForm()
-
+    
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
@@ -59,7 +59,8 @@ def login_account(request):
 
 # 로그아웃
 def logout_account(request):
-    return HttpResponse('로그아웃')
+    logout(request)
+    return redirect('auth:login')
 
 # 프로필 보기
 def get_profile(request):
