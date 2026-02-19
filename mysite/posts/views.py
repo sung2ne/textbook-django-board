@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.hashers import check_password
 from django.contrib.auth.decorators import login_required
 
 from .models import Post
@@ -61,61 +61,64 @@ def get_post(request, post_id):
     return render(request, 'posts/read.html', {'post': post})
 
 # 게시글 수정
+@login_required(login_url='auth:login')
 def update_post(request, post_id):
-    post = get_object_or_404(Post, id=post_id)    
-    post_password = post.password
+    post = get_object_or_404(Post, id=post_id) 
+       
+    if post.created_by != request.user:
+        messages.error(request, '게시글 수정 권한이 없습니다.')
+        return redirect('posts:read', post_id=post.id)
+    
     form = PostUpdateForm(instance=post)
     
     if request.method == 'POST':
         form = PostUpdateForm(request.POST, instance=post)
         
         if form.is_valid():
-            if check_password(form.cleaned_data['password'], post_password):
-                post = form.save(commit=False)
-                post.password = make_password(form.cleaned_data['password'])
+            post.title = form.cleaned_data['title']
+            post.content = form.cleaned_data['content']
+            post.updated_by = request.user
+            post.save()
+                
+            # 파일 삭제
+            if request.POST.get('deleteFile'):
+                if post.filename:
+                    # 파일 삭제
+                    file_path = os.path.join(settings.MEDIA_ROOT, 'posts', str(post.id), str(post.filename))    
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                    
+                    post.filename = None
+                    post.original_filename = None
+                    post.save()
+
+            # 파일 업로드
+            if request.FILES.get('uploadFile'):
+                if post.filename:
+                    # 파일 삭제
+                    file_path = os.path.join(settings.MEDIA_ROOT, 'posts', str(post.id), str(post.filename))    
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                    
+                filename = uuid.uuid4().hex
+                file = request.FILES.get('uploadFile')
+                
+                # 파일 저장 경로
+                file_path = os.path.join(settings.MEDIA_ROOT, 'posts', str(post.id), str(filename))
+                if not os.path.exists(os.path.dirname(file_path)):
+                    os.makedirs(os.path.dirname(file_path))
+                
+                # 파일 저장
+                with open(file_path, 'wb') as f:
+                    for chunk in file.chunks():
+                        f.write(chunk)
+                        
+                post.filename = filename
+                post.original_filename = file.name
                 post.save()
                 
-                # 파일 삭제
-                if request.POST.get('deleteFile'):
-                    if post.filename:
-                        # 파일 삭제
-                        file_path = os.path.join(settings.MEDIA_ROOT, 'posts', str(post.id), str(post.filename))    
-                        if os.path.exists(file_path):
-                            os.remove(file_path)
-                        
-                        post.filename = None
-                        post.original_filename = None
-                        post.save()
-
-                # 파일 업로드
-                if request.FILES.get('uploadFile'):
-                    if post.filename:
-                        # 파일 삭제
-                        file_path = os.path.join(settings.MEDIA_ROOT, 'posts', str(post.id), str(post.filename))    
-                        if os.path.exists(file_path):
-                            os.remove(file_path)
-                        
-                    filename = uuid.uuid4().hex
-                    file = request.FILES.get('uploadFile')
-                    
-                    # 파일 저장 경로
-                    file_path = os.path.join(settings.MEDIA_ROOT, 'posts', str(post.id), str(filename))
-                    if not os.path.exists(os.path.dirname(file_path)):
-                        os.makedirs(os.path.dirname(file_path))
-                    
-                    # 파일 저장
-                    with open(file_path, 'wb') as f:
-                        for chunk in file.chunks():
-                            f.write(chunk)
-                            
-                    post.filename = filename
-                    post.original_filename = file.name
-                    post.save()
-                    
-                messages.success(request, '게시글이 수정되었습니다.')
-                return redirect('posts:read', post_id=post.id)
-            else:
-                messages.error(request, '비밀번호가 일치하지 않습니다.')
+            messages.success(request, '게시글이 수정되었습니다.')
+            return redirect('posts:read', post_id=post.id)
         else:
             messages.error(request, '게시글 수정에 실패했습니다.')
 
