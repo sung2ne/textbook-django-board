@@ -1,6 +1,6 @@
 # 소설처럼 읽는 장고 웹 프레임워크 - 실습 코드
 
-[위키독스 교재](https://wikidocs.net/book/16995)의 실습 코드 저장소입니다.
+[iBetter Books 교재](https://text.ibetter.kr/django)의 실습 코드 저장소입니다.
 
 Django로 게시판 웹 서비스를 단계별로 구현합니다.
 
@@ -186,4 +186,4 @@ mysite/
 
 ## 라이선스
 
-이 저장소는 [소설처럼 읽는 장고 웹 프레임워크](https://wikidocs.net/book/16995) 교재의 실습 코드입니다.
+이 저장소는 [소설처럼 읽는 장고 웹 프레임워크](https://text.ibetter.kr/django) 교재의 실습 코드입니다.
