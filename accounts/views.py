@@ -1,52 +1,16 @@
-from django.core.mail import send_mail
-from django.conf import settings
-from django.urls import reverse
+from django.core.cache import cache
 
-def signup(request):
+def send_phone_code(request):
     if request.method == 'POST':
-        form = SignupForm(request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.is_active = False  # 이메일 인증 전까지 비활성화
-            user.save()
+        phone_number = request.POST.get('phone_number')
 
-            # 인증 토큰 생성 및 메일 발송
-            token = user.generate_email_token()
-            verify_url = request.build_absolute_uri(
-                reverse('accounts:verify_email', args=[token])
-            )
+        # 발송 횟수 제한 (1시간에 5회)
+        cache_key = f'sms_count_{phone_number}'
+        count = cache.get(cache_key, 0)
 
-            send_mail(
-                subject='[게시판] 이메일 인증을 완료해주세요',
-                message=f'''
-안녕하세요, {user.username}님!
+        if count >= 5:
+            return JsonResponse({'error': '너무 많은 요청입니다. 1시간 후 다시 시도해주세요.'}, status=429)
 
-아래 링크를 클릭하여 이메일 인증을 완료해주세요.
+        cache.set(cache_key, count + 1, 3600)  # 1시간 유지
 
-{verify_url}
-
-감사합니다.
-                ''',
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
-            )
-
-            messages.info(request, '인증 메일이 발송되었습니다. 이메일을 확인해주세요.')
-            return redirect('accounts:login')
-    else:
-        form = SignupForm()
-
-    return render(request, 'accounts/signup.html', {'form': form})
-
-def verify_email(request, token):
-    try:
-        user = User.objects.get(email_token=token)
-        user.is_active = True
-        user.email_verified = True
-        user.email_token = None
-        user.save()
-        messages.success(request, '이메일 인증이 완료되었습니다.')
-    except User.DoesNotExist:
-        messages.error(request, '유효하지 않은 인증 링크입니다.')
-
-    return redirect('accounts:login')
+        # ... 인증번호 발송 로직
